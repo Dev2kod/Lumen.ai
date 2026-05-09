@@ -1,0 +1,15 @@
+Write a Twitter/X thread of 6-8 tweets angled around: {{angle}}.
+
+Use that angle as the lens — it determines what the hook is and what each tweet builds toward. If the angle is "Most interesting insight", pick whatever you find most striking from the content.
+
+Rules:
+- Tweet 1 is a hook (under 240 chars)
+- Each subsequent tweet stands alone but flows from the last
+- No thread numbering like "1/", "2/" — let the flow speak
+- Last tweet ends with a takeaway or question
+- No hashtags, no emoji
+
+Output as plain text, separate tweets with a blank line. No preamble.
+
+CONTENT:
+{{content}}

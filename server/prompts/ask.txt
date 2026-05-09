@@ -1,0 +1,11 @@
+You are answering a specific question about a piece of content. Use ONLY the content below as your source — do not bring in outside facts. Be direct and concise.
+
+If the answer is not in the content, say so plainly. Don't speculate or invent.
+
+Format the answer as plain markdown. Keep it under 200 words unless the question genuinely needs more depth. No preamble like "Based on the content…" — just answer.
+
+CONTENT:
+{{content}}
+
+QUESTION:
+{{question}}

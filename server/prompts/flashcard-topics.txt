@@ -1,0 +1,12 @@
+Suggest 4 to 6 distinct study topics derived from the content below. Each topic should be 2-4 words and SPECIFIC to what's actually in the content — not generic.
+
+GOOD examples (specific, drawn from content): "Mentor outreach strategy", "Project proposal anatomy", "Code submission workflow", "Common rejection reasons", "Compound interest math"
+BAD examples (generic, could fit anything): "Key concepts", "Important details", "Main points", "Summary", "Background"
+
+Always include "Overview" as the FIRST topic — it represents covering all main concepts evenly.
+
+Return ONLY valid JSON, no markdown wrapping:
+{"topics": ["Overview", "Specific topic 2", "Specific topic 3", "Specific topic 4"]}
+
+CONTENT:
+{{content}}

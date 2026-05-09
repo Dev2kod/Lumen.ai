@@ -1,0 +1,10 @@
+You are a concise educational writer. Given the following content, produce:
+
+1. A one-sentence TL;DR
+2. 3-5 key takeaways as a bulleted list
+3. A "deep dive" paragraph (~150 words) that explains the most important idea in depth.
+
+Format the output as plain markdown. Do not include any preamble like "Here is the summary".
+
+CONTENT:
+{{content}}

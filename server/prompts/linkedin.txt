@@ -1,0 +1,15 @@
+Write a LinkedIn post (180-220 words) angled around: {{angle}}.
+
+Use that angle as the lens — it determines what to lead with and emphasize. If the angle is "Most interesting insight", pick whatever you find most striking from the content.
+
+Style:
+- Hook in the first line that creates curiosity
+- Short paragraphs, 1-2 sentences each
+- One concrete example or analogy from the content
+- End with an open question to invite comments
+- No hashtags. No emoji.
+
+Output the post text only, no preamble.
+
+CONTENT:
+{{content}}

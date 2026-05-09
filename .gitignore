@@ -1,0 +1,16 @@
+node_modules
+.env
+.env.local
+dist
+build
+
+# SQLite
+db.sqlite
+*.db
+*.db-shm
+*.db-wal
+
+# Editor
+.vscode
+.idea
+.DS_Store

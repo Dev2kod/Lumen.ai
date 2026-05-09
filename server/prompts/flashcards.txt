@@ -1,0 +1,14 @@
+Generate exactly 5 flashcards from the content below, focused on the requested TOPIC. Each flashcard tests one concrete concept that's actually present in the content.
+
+If the topic is "Overview", cover the most important concepts evenly across the content.
+Otherwise, focus the cards on the topic — even if it's narrow, prefer depth over breadth.
+
+Return ONLY valid JSON in this exact format, no markdown wrapping:
+[{"q": "question text", "a": "answer text"}, ...]
+
+Make questions specific (not "What is the main idea"). Make answers 1-2 sentences. If the topic isn't substantively covered in the content, still return 5 cards but note in answers that the content covers it only briefly.
+
+TOPIC: {{topic}}
+
+CONTENT:
+{{content}}

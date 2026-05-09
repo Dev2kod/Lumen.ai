@@ -1,0 +1,9 @@
+Generate exactly 5 multiple-choice quiz questions from the content. Each has 4 options. Only one correct.
+
+Return ONLY valid JSON, no markdown:
+[{"q": "...", "options": ["A", "B", "C", "D"], "answer_index": 0}, ...]
+
+Make distractors plausible, not obviously wrong.
+
+CONTENT:
+{{content}}

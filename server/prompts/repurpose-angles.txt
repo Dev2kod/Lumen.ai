@@ -1,0 +1,21 @@
+Suggest 4 to 6 distinct angles for repurposing the content below into a social post. Each angle is a SPECIFIC hook or framing someone could write a post around — not a generic theme.
+
+GOOD examples (specific, content-driven hooks):
+- "Why the GSoC selection process changed in 2026"
+- "What separates accepted from rejected applicants"
+- "The compounding effect of weekly contributions"
+- "A contrarian take on AI in coding interviews"
+
+BAD examples (generic, fits any content):
+- "Key takeaways"
+- "Important insights"
+- "Main points"
+- "Summary"
+
+Always include "Most interesting insight" as the FIRST angle — it represents the default "what's the most striking thing" framing.
+
+Return ONLY valid JSON, no markdown wrapping:
+{"angles": ["Most interesting insight", "Specific angle 2", "Specific angle 3", "Specific angle 4"]}
+
+CONTENT:
+{{content}}
