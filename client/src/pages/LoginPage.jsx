@@ -1,26 +1,46 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowRight, EnvelopeSimple, Check } from '@phosphor-icons/react';
 import { useAuth } from '../hooks/useAuth.jsx';
 import Atmosphere from '../components/Atmosphere.jsx';
 
 export default function LoginPage() {
-  const { status, providers } = useAuth();
+  const { status, requestMagicLink } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [sent, setSent] = useState(null); // { email, delivery } once link issued
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const err = params.get('error');
-    if (err) setError(err);
-  }, [location.search]);
+    if (status === 'authed') {
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next') || '/library';
+      navigate(next, { replace: true });
+    }
+  }, [status, location.search, navigate]);
 
-  useEffect(() => {
-    if (status === 'authed') navigate('/library', { replace: true });
-  }, [status, navigate]);
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!email.trim() || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await requestMagicLink(email.trim().toLowerCase());
+      setSent({ email: res.email, delivery: res.delivery });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
-  function startGoogle() {
-    window.location.href = '/api/auth/google';
+  function reset() {
+    setSent(null);
+    setEmail('');
+    setError(null);
   }
 
   return (
@@ -32,68 +52,117 @@ export default function LoginPage() {
           L
         </div>
 
-        <h1 className="font-display font-medium text-[clamp(28px,4vw,40px)] leading-[1.05] tracking-[-0.025em] text-ink mb-4 fvs-display-lg">
-          Sign in to Lumen.
-        </h1>
-        <p className="text-muted text-[15px] leading-relaxed mb-9 max-w-[40ch]">
-          Lumen is bring-your-own-key — sign in, paste your Gemini key once,
-          and your library lives in your account.
-        </p>
-
-        {error && (
-          <div className="text-accent text-sm mb-5 border border-line bg-sunken rounded-sm px-4 py-3">
-            {error}
-          </div>
-        )}
-
-        {providers.google ? (
-          <button
-            type="button"
-            onClick={startGoogle}
-            className="w-full inline-flex items-center justify-center gap-3 px-5 py-3 text-sm font-medium rounded-sm bg-surface text-ink border border-line-strong hover:border-ink transition-colors duration-100"
-          >
-            <GoogleG />
-            Continue with Google
-          </button>
+        {sent ? (
+          <SentState
+            email={sent.email}
+            delivery={sent.delivery}
+            onReset={reset}
+          />
         ) : (
-          <div className="text-muted text-sm border border-line bg-sunken rounded-sm px-4 py-3">
-            Google sign-in isn't configured on this server. Set
-            <code className="font-mono text-xs mx-1 px-1 py-0.5 bg-canvas rounded">GOOGLE_CLIENT_ID</code>
-            and
-            <code className="font-mono text-xs mx-1 px-1 py-0.5 bg-canvas rounded">GOOGLE_CLIENT_SECRET</code>
-            in <code className="font-mono text-xs">.env</code> and restart.
-          </div>
+          <SignInForm
+            email={email}
+            onEmailChange={setEmail}
+            onSubmit={handleSubmit}
+            busy={busy}
+            error={error}
+          />
         )}
-
-        <p className="text-subtle text-xs mt-8 leading-relaxed max-w-[40ch]">
-          We only see your email and name. No data leaves this server — your
-          Gemini key is encrypted at rest and used only for your own
-          generation requests.
-        </p>
       </div>
     </main>
   );
 }
 
-function GoogleG() {
+function SignInForm({ email, onEmailChange, onSubmit, busy, error }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
-      />
-      <path
-        fill="#34A853"
-        d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
-      />
-      <path
-        fill="#EA4335"
-        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"
-      />
-    </svg>
+    <>
+      <h1 className="font-display font-medium text-[clamp(28px,4vw,40px)] leading-[1.05] tracking-[-0.025em] text-ink mb-4 fvs-display-lg">
+        Sign in to Lumen.
+      </h1>
+      <p className="text-muted text-[15px] leading-relaxed mb-9 max-w-[40ch]">
+        Drop your email and we'll send a one-click sign-in link. No password
+        to remember. Bring-your-own-key for everything else.
+      </p>
+
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <label className="block text-xs font-medium tracking-[0.04em] text-muted uppercase">
+          Email
+          <input
+            type="email"
+            required
+            autoFocus
+            autoComplete="email"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
+            placeholder="you@example.com"
+            disabled={busy}
+            className="mt-2 w-full bg-surface border border-line rounded-sm px-3.5 py-3 text-sm text-ink transition-[border-color] duration-100 focus:outline-none focus:border-ink"
+          />
+        </label>
+
+        {error && (
+          <div className="text-accent text-sm border border-line bg-sunken rounded-sm px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={!email.trim() || busy}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium rounded-sm bg-accent text-accent-on border border-accent enabled:hover:bg-accent-hover enabled:hover:border-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,border-color] duration-100"
+        >
+          {busy ? 'Sending…' : 'Email me a sign-in link'}
+          {!busy && <ArrowRight size={14} weight="regular" />}
+        </button>
+      </form>
+
+      <p className="text-subtle text-xs mt-8 leading-relaxed max-w-[40ch]">
+        Your Gemini key is encrypted at rest and used only for your own
+        generation requests. We don't store passwords.
+      </p>
+    </>
+  );
+}
+
+function SentState({ email, delivery, onReset }) {
+  return (
+    <>
+      <h1 className="font-display font-medium text-[clamp(28px,4vw,40px)] leading-[1.05] tracking-[-0.025em] text-ink mb-4 fvs-display-lg">
+        Check your inbox.
+      </h1>
+      <p className="text-muted text-[15px] leading-relaxed mb-7 max-w-[40ch]">
+        We sent a sign-in link to{' '}
+        <span className="text-ink font-medium">{email}</span>. Click it to
+        finish signing in. The link expires in 15 minutes.
+      </p>
+
+      <div className="flex items-center gap-3 border border-line bg-sunken rounded-sm px-4 py-3 mb-6">
+        <EnvelopeSimple size={18} weight="regular" className="text-accent shrink-0" />
+        <p className="text-sm text-ink leading-snug">
+          Didn't get it? Check spam, or{' '}
+          <button
+            type="button"
+            onClick={onReset}
+            className="underline decoration-line-strong underline-offset-2 hover:text-accent hover:decoration-accent"
+          >
+            try a different address
+          </button>
+          .
+        </p>
+      </div>
+
+      {delivery === 'console' && (
+        <div className="border border-dashed border-line rounded-sm px-4 py-3 mb-2">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-subtle font-medium mb-2">
+            <Check size={12} weight="bold" />
+            Dev mode
+          </div>
+          <p className="text-muted text-[13px] leading-relaxed">
+            <code className="font-mono text-xs">RESEND_API_KEY</code> isn't
+            set, so the magic link was printed to the server's terminal
+            instead. Copy it from there and paste into your browser.
+          </p>
+        </div>
+      )}
+    </>
   );
 }

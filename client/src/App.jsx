@@ -14,6 +14,7 @@ import LibraryPage from './pages/LibraryPage.jsx';
 import NewSourcePage from './pages/NewSourcePage.jsx';
 import SourcePage from './pages/SourcePage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import AuthCallbackPage from './pages/AuthCallbackPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { PaperPlane } from './components/Illustration.jsx';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
@@ -80,7 +81,9 @@ function Shell() {
   }, [theme]);
 
   // Auth-page paths render full-bleed, no sidebar
-  const isAuthRoute = location.pathname === '/login';
+  const isAuthRoute =
+    location.pathname === '/login' ||
+    location.pathname.startsWith('/auth/');
 
   if (status === 'loading') {
     return (
@@ -94,6 +97,7 @@ function Shell() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
       </Routes>
     );
   }

@@ -1,8 +1,37 @@
+const TOKEN_KEY = 'lumen.token';
+
+export const tokenStore = {
+  get() {
+    try {
+      return window.localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set(token) {
+    try {
+      window.localStorage.setItem(TOKEN_KEY, token);
+    } catch {
+      // ignore
+    }
+  },
+  clear() {
+    try {
+      window.localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      // ignore
+    }
+  },
+};
+
 async function request(path, { method = 'GET', body } = {}) {
+  const headers = body ? { 'Content-Type': 'application/json' } : {};
+  const token = tokenStore.get();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const res = await fetch(`/api${path}`, {
     method,
-    credentials: 'include',
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
 
@@ -26,7 +55,11 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 export const api = {
-  // Auth
+  // Auth — magic-link flow
+  requestMagicLink: (email) =>
+    request('/auth/login', { method: 'POST', body: { email } }),
+  verifyMagicLink: (token) =>
+    request('/auth/verify', { method: 'POST', body: { token } }),
   me: () => request('/auth/me'),
   logout: () => request('/auth/logout', { method: 'POST' }),
   setKey: (key) =>

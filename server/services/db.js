@@ -76,6 +76,14 @@ db.exec(`
     PRIMARY KEY (provider, provider_user_id),
     FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
   ) STRICT;
+
+  CREATE TABLE IF NOT EXISTS magic_links (
+    token TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    used_at TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  ) STRICT;
 `);
 
 // Migrations on existing tables
@@ -137,13 +145,30 @@ const stmts = {
     `DELETE FROM sessions WHERE datetime(expires_at) <= datetime('now')`
   ),
 
-  // ---------- OAuth links ----------
+  // ---------- OAuth links (kept for forward-compat with future Google flow) ----------
   upsertOAuthAccount: db.prepare(
     `INSERT INTO oauth_accounts (provider, provider_user_id, email) VALUES (?, ?, ?)
      ON CONFLICT(provider, provider_user_id) DO UPDATE SET email = excluded.email`
   ),
   getOAuthAccount: db.prepare(
     `SELECT email FROM oauth_accounts WHERE provider = ? AND provider_user_id = ?`
+  ),
+
+  // ---------- Magic links ----------
+  insertMagicLink: db.prepare(
+    `INSERT INTO magic_links (token, email, expires_at) VALUES (?, ?, ?)`
+  ),
+  getMagicLink: db.prepare(
+    `SELECT token, email, expires_at, used_at FROM magic_links WHERE token = ?`
+  ),
+  consumeMagicLink: db.prepare(
+    `UPDATE magic_links SET used_at = datetime('now')
+     WHERE token = ? AND used_at IS NULL AND datetime(expires_at) > datetime('now')`
+  ),
+  cleanupOldMagicLinks: db.prepare(
+    `DELETE FROM magic_links
+     WHERE datetime(expires_at) < datetime('now', '-1 day')
+        OR (used_at IS NOT NULL AND datetime(used_at) < datetime('now', '-1 day'))`
   ),
 
   // ---------- Sources (user-scoped) ----------
@@ -292,6 +317,28 @@ function getOAuthAccount({ provider, provider_user_id }) {
   return stmts.getOAuthAccount.get(provider, provider_user_id);
 }
 
+// ---------- Magic links ----------
+function insertMagicLink({ token, email, expires_at }) {
+  stmts.insertMagicLink.run(token, email, expires_at);
+}
+
+function getMagicLink(token) {
+  return stmts.getMagicLink.get(token);
+}
+
+/**
+ * Atomically marks the link consumed if it's still valid.
+ * Returns true on success (caller can trust the email + sign the user in),
+ * false if the link is already used, expired, or doesn't exist.
+ */
+function consumeMagicLink(token) {
+  return stmts.consumeMagicLink.run(token).changes > 0;
+}
+
+function cleanupOldMagicLinks() {
+  return stmts.cleanupOldMagicLinks.run().changes;
+}
+
 // ---------- Sources ----------
 function listSources(email) {
   return stmts.listSourcesForUser.all(email);
@@ -427,6 +474,11 @@ module.exports = {
   // oauth
   upsertOAuthAccount,
   getOAuthAccount,
+  // magic links
+  insertMagicLink,
+  getMagicLink,
+  consumeMagicLink,
+  cleanupOldMagicLinks,
   // sources
   listSources,
   getSourceById,

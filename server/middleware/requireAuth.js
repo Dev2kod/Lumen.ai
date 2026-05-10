@@ -1,28 +1,32 @@
-const { getSession, getUser } = require('../services/db');
-const { decryptSecret, SESSION_COOKIE, clearSessionCookie } = require('../services/auth');
+const { getUser } = require('../services/db');
+const { decryptSecret, verifyToken } = require('../services/auth');
 
 /**
- * Reads the session cookie, looks up the session + user, attaches:
- *   req.user           — { email, name, avatar_url }
- *   req.geminiKey      — decrypted Gemini API key, or null if not set
+ * Reads `Authorization: Bearer <jwt>`, verifies, looks up the user, attaches:
+ *   req.user      — { email, name, avatar_url }
+ *   req.geminiKey — decrypted Gemini API key, or null if not set
  *
- * Routes that need the key should check `req.geminiKey` and return a 400
- * with code MISSING_GEMINI_KEY if absent — the client uses that to nudge
- * the user to /settings.
+ * Routes that need the key check `req.geminiKey` and return 400 with
+ * code MISSING_GEMINI_KEY if absent — the client uses that to nudge the
+ * user to /settings.
  */
 function requireAuth(req, res, next) {
-  const token = req.cookies?.[SESSION_COOKIE];
-  if (!token) return res.status(401).json({ error: 'Sign in to continue' });
+  const auth = req.headers.authorization || '';
+  if (!auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Sign in to continue' });
+  }
+  const token = auth.slice(7).trim();
+  if (!token) {
+    return res.status(401).json({ error: 'Sign in to continue' });
+  }
 
-  const session = getSession(token);
-  if (!session) {
-    clearSessionCookie(res);
+  const payload = verifyToken(token);
+  if (!payload?.email) {
     return res.status(401).json({ error: 'Session expired' });
   }
 
-  const user = getUser(session.email);
+  const user = getUser(payload.email);
   if (!user) {
-    clearSessionCookie(res);
     return res.status(401).json({ error: 'Account not found' });
   }
 
