@@ -54,7 +54,8 @@
       "Bash(curl -s -X POST -H \"Content-Type: application/json\" -d '{\"token\":\"0573ee6dddd430bc10543debcd4247c4728b5ca28d516abfc5947d7a12cf7406\"}' http://localhost:5051/api/auth/verify)",
       "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5ld3VzZXJAbHVtZW4uZGV2IiwiaWF0IjoxNzc4NDA3MjU2LCJleHAiOjE3ODA5OTkyNTZ9.BcjzbxNqEWIR6zIOWrqM-Yw4KryvWf-L2HtFlIhffcQ' http://localhost:5051/api/auth/me)",
       "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5ld3VzZXJAbHVtZW4uZGV2IiwiaWF0IjoxNzc4NDA3MjU2LCJleHAiOjE3ODA5OTkyNTZ9.BcjzbxNqEWIR6zIOWrqM-Yw4KryvWf-L2HtFlIhffcQ' http://localhost:5051/api/sources)",
-      "Bash(timeout 3 node -e \"require\\('dotenv'\\).config\\({ path: require\\('path'\\).join\\(__dirname, '..', '.env'\\) }\\); console.log\\('RESEND set?', !!process.env.RESEND_API_KEY, 'starts with:', \\(process.env.RESEND_API_KEY||''\\).slice\\(0,5\\)\\); console.log\\('MAIL_FROM:', process.env.MAIL_FROM\\);\")"
+      "Bash(timeout 3 node -e \"require\\('dotenv'\\).config\\({ path: require\\('path'\\).join\\(__dirname, '..', '.env'\\) }\\); console.log\\('RESEND set?', !!process.env.RESEND_API_KEY, 'starts with:', \\(process.env.RESEND_API_KEY||''\\).slice\\(0,5\\)\\); console.log\\('MAIL_FROM:', process.env.MAIL_FROM\\);\")",
+      "PowerShell(Get-Command claude -ErrorAction SilentlyContinue; where.exe claude 2>$null; if \\(Test-Path \"$env:APPDATA\\\\npm\\\\claude.cmd\"\\) { \"found: $env:APPDATA\\\\npm\\\\claude.cmd\" }; if \\(Test-Path \"$env:LOCALAPPDATA\\\\Programs\\\\claude\"\\) { Get-ChildItem \"$env:LOCALAPPDATA\\\\Programs\\\\claude\" | Select-Object -ExpandProperty FullName })"
     ]
   }
 }
